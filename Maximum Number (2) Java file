@@ -1,0 +1,45 @@
+package com.example.maximumnumber;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+
+public class MainActivity extends AppCompatActivity {
+    //creating Java Objects
+    EditText number1;
+    EditText number2;
+    EditText number3;
+    Button maximum;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        //Linking GUI components with objects
+        number1 = (EditText)findViewById(R.id.num1);
+        number2 = (EditText)findViewById(R.id.num2);
+        number3 = (EditText)findViewById(R.id.num3);
+        maximum = (Button)findViewById(R.id.max);
+
+        maximum.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int a, b, c, d;
+                a = Integer.parseInt(number1.getText().toString());
+                b = Integer.parseInt(number2.getText().toString());
+                c = Integer.parseInt(number3.getText().toString());
+                if (a > b && a > c) {
+                    d = a;
+                } else if (b > c) {
+                    d = b;
+                } else {
+                    d = c;
+                }
+
+                maximum.setText("Maximum Value is: "+d + "");
+            }
+        });
+
+    }
+}
