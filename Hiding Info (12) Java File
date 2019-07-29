@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
 //Second Activity (SENDER)
 
+
 package com.example.hidinginfo;
 
 import android.support.v7.app.AppCompatActivity;
@@ -252,6 +253,7 @@ public class Sender extends AppCompatActivity {
     }
 }
 
+
 //Third Activity (RECEIVER)
 
 package com.example.hidinginfo;
@@ -332,10 +334,10 @@ public class Receiver extends AppCompatActivity {
                     fun1lsb();
                 }
                 else if (scheme==2) {
-                    fun2lsb();
+                    //fun2lsb();
                 }
                 else if(scheme==3){
-                    fun3lsb();
+                    //fun3lsb();
                 }
                 else
                     Toast.makeText(getBaseContext(),"No Message Embedded!",Toast.LENGTH_LONG).show();
@@ -437,147 +439,7 @@ public class Receiver extends AppCompatActivity {
 
 
     }
-    void fun2lsb()
-    {
-        try {
-            h = myBitmap.getHeight();
-            w = myBitmap.getWidth();
-            k = 0;
-            cipher=new int[h*w];
-            for (i = 0; i < w; i++) {
-                for (j = 0; j < h; j++) {
-                    p = myBitmap.getPixel(i, j);
 
-
-                    a = (p>>24) & 255; //get alpha
-                    r = (p>>16) & 255; //get red
-                    g = (p>>8) & 255;//get green
-                    b = p & 0xff;  //get blue
-                    int eof=((r&7)<<6)+ ((g&7)<<3)+ (b&7);
-                    cipher[k]= r&1;
-                    cipher[k+1]=g&1;
-                    if (eof != 255)
-                    {
-                        k++;
-                        k++;
-                    }else
-                    {
-                        lettercount=k;
-                        break;
-                    }
-
-                }
-
-                if(lettercount==k)
-                    break;
-
-            }
-            String msgfinal="";
-            int msgcompose=0;
-            for(i=8;i<lettercount;i++)
-            {
-                if(cipher[i]==1)
-                    msgcompose=msgcompose+128;
-                if(cipher[i+1]==1)
-                    msgcompose=msgcompose+64;
-                if(cipher[i+2]==1)
-                    msgcompose=msgcompose+32;
-                if(cipher[i+3]==1)
-                    msgcompose=msgcompose+16;
-                if(cipher[i+4]==1)
-                    msgcompose=msgcompose+8;
-                if(cipher[i+5]==1)
-                    msgcompose=msgcompose+4;
-                if(cipher[i+6]==1)
-                    msgcompose=msgcompose+2;
-                if(cipher[i+7]==1)
-                    msgcompose=msgcompose+1;
-
-                msgfinal=msgfinal+(char)msgcompose;
-
-                msgcompose=0;
-                i=i+7;
-            }
-            et.setText(msgfinal);
-            Toast.makeText(getBaseContext(),"Successfully Extracted!",Toast.LENGTH_LONG).show();
-
-        } catch (Exception e) {
-            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
-        }
-
-
-    }
-    void fun3lsb()
-    {
-        try {
-            h = myBitmap.getHeight();
-            w = myBitmap.getWidth();
-            k = 0;
-            cipher=new int[h*w];
-            for (i = 0; i < w; i++) {
-                for (j = 0; j < h; j++) {
-                    p = myBitmap.getPixel(i, j);
-
-
-                    a = (p>>24) & 255; //get alpha
-                    r = (p>>16) & 255; //get red
-                    g = (p>>8) & 255;//get green
-                    b = p & 0xff;  //get blue
-                    int eof=((r&7)<<6)+ ((g&7)<<3)+ (b&7);
-                    //cipher[k]=a&1;
-                    cipher[k]= r&1;
-                    cipher[k+1]=g&1;
-                    cipher[k+2]=b&1;
-                    if (eof != 255)
-                    {
-                        k=k+3;
-                    }else
-                    {
-                        lettercount=k;
-                        break;
-                    }
-
-                }
-
-                if(lettercount==k)
-                    break;
-
-            }
-            String msgfinal="";
-            int msgcompose=0;
-            for(i=8;i<lettercount;i++)
-            {
-                if(cipher[i]==1)
-                    msgcompose=msgcompose+128;
-                if(cipher[i+1]==1)
-                    msgcompose=msgcompose+64;
-                if(cipher[i+2]==1)
-                    msgcompose=msgcompose+32;
-                if(cipher[i+3]==1)
-                    msgcompose=msgcompose+16;
-                if(cipher[i+4]==1)
-                    msgcompose=msgcompose+8;
-                if(cipher[i+5]==1)
-                    msgcompose=msgcompose+4;
-                if(cipher[i+6]==1)
-                    msgcompose=msgcompose+2;
-                if(cipher[i+7]==1)
-                    msgcompose=msgcompose+1;
-
-                msgfinal=msgfinal+(char)msgcompose;
-
-                msgcompose=0;
-                i=i+7;
-            }
-            et.setText(msgfinal);
-            Toast.makeText(getBaseContext(),"Successfully Extracted!",Toast.LENGTH_LONG).show();
-
-        } catch (Exception e) {
-            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
-        }
-
-
-    }
     int findscheme()
     {
         try {
