@@ -1,0 +1,755 @@
+//MainActivity (First Activit) you will have to create three activities
+
+package com.example.hidinginfo;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+
+import android.os.Bundle;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+public class MainActivity extends AppCompatActivity {
+
+    Button b1,b2;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        b1=(Button)findViewById(R.id.btnsender);
+        b2=(Button)findViewById(R.id.btnreceiver);
+
+        b1.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                Intent i=new Intent(getBaseContext(),Sender.class);
+                startActivity(i);
+
+            }
+        });
+        b2.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                Intent i=new Intent(getBaseContext(),Receiver.class);
+                startActivity(i);
+
+            }
+        });
+    }
+}
+
+
+//Second Activity (SENDER)
+
+package com.example.hidinginfo;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+
+public class Sender extends AppCompatActivity {
+
+    ImageView iv;
+    EditText et;
+    Button btnload, btnencrypt, btnembed, btnsave;
+    TextView tvencrpted;
+    Uri currImageURI;
+    String plaintext, ciphertext = "";
+    Bitmap myBitmap, myBitmap2;
+    File imgFile, f;
+    int h, w, a, r, g, b, p, p2, i, j, k = 0, scheme,cipher[], lettercount;
+    ByteArrayOutputStream bytes;
+    FileOutputStream fo;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_sender);
+
+        iv = (ImageView) findViewById(R.id.imageView);
+        et = (EditText) findViewById(R.id.etplaintext);
+        btnload = (Button) findViewById(R.id.btnload);
+        btnencrypt = (Button) findViewById(R.id.btnencrypt);
+        btnembed = (Button) findViewById(R.id.btnembed);
+        btnsave = (Button) findViewById(R.id.btnsave);
+        tvencrpted = (TextView) findViewById(R.id.tvencrpyted);
+        btnembed.setEnabled(false);
+        btnsave.setEnabled(false);
+
+        btnload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
+                btnembed.setEnabled(true);
+
+            }
+        });
+
+        btnencrypt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    ciphertext = "";
+                    int current = 0;
+                    plaintext = et.getText().toString();
+                    h = myBitmap.getHeight();
+                    w = myBitmap.getWidth();
+
+                    scheme=1;
+
+                    plaintext=""+1+plaintext;
+                    int lettercountold=plaintext.length();
+                    if((lettercountold%3)!=0)
+                    {
+                        for(int ii=1;ii<=3-(lettercountold%3);ii++)
+                        {
+                            plaintext=plaintext+" ";
+                        }
+                    }
+
+                    lettercount = plaintext.length();
+
+                    cipher = new int[lettercount * 8];
+                    for (i = 0; i < lettercount; i++) {
+                        String bitstring = Integer.toBinaryString(plaintext.charAt(i));
+                        String strzero = "00000000";
+                        String stremb = strzero.substring(0, 8 - bitstring.length()) + bitstring;
+
+                        cipher[current] = stremb.charAt(0) - 48;
+                        current++;
+                        cipher[current] = stremb.charAt(1) - 48;
+                        current++;
+                        cipher[current] = stremb.charAt(2) - 48;
+                        current++;
+                        cipher[current] = stremb.charAt(3) - 48;
+                        current++;
+                        cipher[current] = stremb.charAt(4) - 48;
+                        current++;
+                        cipher[current] = stremb.charAt(5) - 48;
+                        current++;
+                        cipher[current] = stremb.charAt(6) - 48;
+                        current++;
+                        cipher[current] = stremb.charAt(7) - 48;
+                        current++;
+                    }
+                    for (i = 0; i < lettercount * 8; i++) {
+                        ciphertext = ciphertext + cipher[i];
+                    }
+
+
+
+                }
+                catch(Exception e)
+                {
+                    Toast.makeText(getBaseContext(), "Error! !"+e, Toast.LENGTH_LONG).show();
+                }
+                tvencrpted.setText(ciphertext);
+            }
+        });
+
+        btnembed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fun1lsb();
+            }
+        });
+
+        btnsave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    bytes = new ByteArrayOutputStream();
+                    myBitmap2.compress(Bitmap.CompressFormat.PNG, 100, bytes);
+                    f = new File(Environment.getExternalStorageDirectory(), "Target.png");
+                    f.createNewFile();
+                    fo = new FileOutputStream(f);
+                    fo.write(bytes.toByteArray());
+                    fo.close();
+                    Toast.makeText(getBaseContext(), "Successfully Saved!", Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 1) {
+                try {
+                    currImageURI = data.getData();
+                    imgFile = new File(data.getData().getPath().toString());
+                    myBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), currImageURI);
+                    myBitmap2 = myBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                    iv.setImageBitmap(myBitmap);
+                    Toast.makeText(getBaseContext(), "Successfully Loaded!", Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    Toast.makeText(getBaseContext(), "Error:" + e, Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    void fun1lsb() {
+        try {
+            h = myBitmap.getHeight();
+            w = myBitmap.getWidth();
+            k = 0;
+            for (i = 0; i < w; i++) {
+                for (j = 0; j < h; j++) {
+                    p = myBitmap.getPixel(i, j);
+                    a = (p >> 24) & 255;  //get alpha
+                    r = (p >> 16) & 255;  //get red
+                    g = (p >> 8) & 255;   //get green
+                    b = p & 255;        //get blue
+                    if (k < lettercount * 8) {
+                        r = (r & 254) + ((cipher[k]));
+                        k++;
+                    } else if (k == lettercount * 8) {
+                        r = (r & 248) + ((255 & 448) >> 6);
+                        g = (g & 248) + ((255 & 56) >> 3);
+                        b = (b & 248) + ((255 & 7) >> 0);
+                        k++;
+                    }
+                    p2 = (a << 24) | (r << 16) | (g << 8) | b;
+                    myBitmap2.setPixel(i, j, p2);
+                }
+            }
+
+            Toast.makeText(getBaseContext(), "Successfully Applied!", Toast.LENGTH_LONG).show();
+            btnsave.setEnabled(true);
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
+        }
+    }
+}
+
+//Third Activity (RECEIVER)
+
+package com.example.hidinginfo;
+
+import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+
+import android.os.Bundle;
+
+public class Receiver extends AppCompatActivity {
+
+
+    ImageView iv;
+    EditText et;
+    Button btnload, btnembed;
+
+    Uri currImageURI;
+    String curFileName,plaintext,ciphertext="";
+    Bitmap myBitmap, myBitmap2;
+    File imgFile,f;
+    int h,w,a,r,g,b,ans,p,p2,i,j,k=0,cipher[],lettercount=-1;
+    ByteArrayOutputStream bytes;
+    FileOutputStream fo;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_receiver);
+
+        iv=(ImageView)findViewById(R.id.imageView);
+        et=(EditText)findViewById(R.id.etplaintext);
+        btnload=(Button)findViewById(R.id.btnload);
+
+        btnembed=(Button)findViewById(R.id.btnembed);
+
+
+        btnembed.setEnabled(false);
+        btnembed.setEnabled(false);
+
+
+        btnload.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+
+                Intent intent=new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"),1);
+                btnembed.setEnabled(true);
+
+            }
+        });
+
+
+
+        btnembed.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+
+
+                int scheme=1; findscheme();
+                if(scheme==1) {
+                    fun1lsb();
+                }
+                else if (scheme==2) {
+                    fun2lsb();
+                }
+                else if(scheme==3){
+                    fun3lsb();
+                }
+                else
+                    Toast.makeText(getBaseContext(),"No Message Embedded!",Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (resultCode == RESULT_OK)
+        {
+            if (requestCode == 1)
+            {
+                try
+                {
+                    currImageURI = data.getData();
+                    imgFile = new  File(data.getData().getPath().toString());
+                    myBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), currImageURI);
+                    //myBitmap2 = myBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                    iv.setImageBitmap(myBitmap);
+                    Toast.makeText(getBaseContext(),"Successfully Loaded!",Toast.LENGTH_LONG).show();
+                }catch(Exception e)
+                {
+                    Toast.makeText(getBaseContext(),"Error:"+e,Toast.LENGTH_LONG).show();
+                }
+
+
+
+            }
+        }
+    }
+
+    void fun1lsb()
+    {
+        try {
+            h = myBitmap.getHeight();
+            w = myBitmap.getWidth();
+            k = 0;
+            cipher=new int[h*w];
+            for (i = 0; i < w; i++) {
+                for (j = 0; j < h; j++) {
+                    p = myBitmap.getPixel(i, j);
+
+
+                    a = (p>>24) & 255; //get alpha
+                    r = (p>>16) & 255; //get red
+                    g = (p>>8) & 255;//get green
+                    b = p & 0xff;  //get blue
+                    int eof=((r&7)<<6)+ ((g&7)<<3)+ (b&7);
+                    cipher[k]= r&1;
+                    if (eof != 255)
+                    {
+                        k++;
+                    }else
+                    {
+                        lettercount=k;
+                        break;
+                    }
+
+                }
+
+                if(lettercount==k)
+                    break;
+
+            }
+            String msgfinal="";
+            int msgcompose=0;
+            for(i=8;i<lettercount;i++)
+            {
+                if(cipher[i]==1)
+                    msgcompose=msgcompose+128;
+                if(cipher[i+1]==1)
+                    msgcompose=msgcompose+64;
+                if(cipher[i+2]==1)
+                    msgcompose=msgcompose+32;
+                if(cipher[i+3]==1)
+                    msgcompose=msgcompose+16;
+                if(cipher[i+4]==1)
+                    msgcompose=msgcompose+8;
+                if(cipher[i+5]==1)
+                    msgcompose=msgcompose+4;
+                if(cipher[i+6]==1)
+                    msgcompose=msgcompose+2;
+                if(cipher[i+7]==1)
+                    msgcompose=msgcompose+1;
+
+                msgfinal=msgfinal+(char)msgcompose;
+
+                msgcompose=0;
+                i=i+7;
+            }
+            et.setText(msgfinal);
+            Toast.makeText(getBaseContext(),"Successfully Extracted!",Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
+        }
+
+
+    }
+    void fun2lsb()
+    {
+        try {
+            h = myBitmap.getHeight();
+            w = myBitmap.getWidth();
+            k = 0;
+            cipher=new int[h*w];
+            for (i = 0; i < w; i++) {
+                for (j = 0; j < h; j++) {
+                    p = myBitmap.getPixel(i, j);
+
+
+                    a = (p>>24) & 255; //get alpha
+                    r = (p>>16) & 255; //get red
+                    g = (p>>8) & 255;//get green
+                    b = p & 0xff;  //get blue
+                    int eof=((r&7)<<6)+ ((g&7)<<3)+ (b&7);
+                    cipher[k]= r&1;
+                    cipher[k+1]=g&1;
+                    if (eof != 255)
+                    {
+                        k++;
+                        k++;
+                    }else
+                    {
+                        lettercount=k;
+                        break;
+                    }
+
+                }
+
+                if(lettercount==k)
+                    break;
+
+            }
+            String msgfinal="";
+            int msgcompose=0;
+            for(i=8;i<lettercount;i++)
+            {
+                if(cipher[i]==1)
+                    msgcompose=msgcompose+128;
+                if(cipher[i+1]==1)
+                    msgcompose=msgcompose+64;
+                if(cipher[i+2]==1)
+                    msgcompose=msgcompose+32;
+                if(cipher[i+3]==1)
+                    msgcompose=msgcompose+16;
+                if(cipher[i+4]==1)
+                    msgcompose=msgcompose+8;
+                if(cipher[i+5]==1)
+                    msgcompose=msgcompose+4;
+                if(cipher[i+6]==1)
+                    msgcompose=msgcompose+2;
+                if(cipher[i+7]==1)
+                    msgcompose=msgcompose+1;
+
+                msgfinal=msgfinal+(char)msgcompose;
+
+                msgcompose=0;
+                i=i+7;
+            }
+            et.setText(msgfinal);
+            Toast.makeText(getBaseContext(),"Successfully Extracted!",Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
+        }
+
+
+    }
+    void fun3lsb()
+    {
+        try {
+            h = myBitmap.getHeight();
+            w = myBitmap.getWidth();
+            k = 0;
+            cipher=new int[h*w];
+            for (i = 0; i < w; i++) {
+                for (j = 0; j < h; j++) {
+                    p = myBitmap.getPixel(i, j);
+
+
+                    a = (p>>24) & 255; //get alpha
+                    r = (p>>16) & 255; //get red
+                    g = (p>>8) & 255;//get green
+                    b = p & 0xff;  //get blue
+                    int eof=((r&7)<<6)+ ((g&7)<<3)+ (b&7);
+                    //cipher[k]=a&1;
+                    cipher[k]= r&1;
+                    cipher[k+1]=g&1;
+                    cipher[k+2]=b&1;
+                    if (eof != 255)
+                    {
+                        k=k+3;
+                    }else
+                    {
+                        lettercount=k;
+                        break;
+                    }
+
+                }
+
+                if(lettercount==k)
+                    break;
+
+            }
+            String msgfinal="";
+            int msgcompose=0;
+            for(i=8;i<lettercount;i++)
+            {
+                if(cipher[i]==1)
+                    msgcompose=msgcompose+128;
+                if(cipher[i+1]==1)
+                    msgcompose=msgcompose+64;
+                if(cipher[i+2]==1)
+                    msgcompose=msgcompose+32;
+                if(cipher[i+3]==1)
+                    msgcompose=msgcompose+16;
+                if(cipher[i+4]==1)
+                    msgcompose=msgcompose+8;
+                if(cipher[i+5]==1)
+                    msgcompose=msgcompose+4;
+                if(cipher[i+6]==1)
+                    msgcompose=msgcompose+2;
+                if(cipher[i+7]==1)
+                    msgcompose=msgcompose+1;
+
+                msgfinal=msgfinal+(char)msgcompose;
+
+                msgcompose=0;
+                i=i+7;
+            }
+            et.setText(msgfinal);
+            Toast.makeText(getBaseContext(),"Successfully Extracted!",Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
+        }
+
+
+    }
+    int findscheme()
+    {
+        try {
+            h = myBitmap.getHeight();
+            w = myBitmap.getWidth();
+            k = 0;
+            cipher=new int[h*w];
+
+
+            for (i = 0; i < 8; i++) {
+                for (j = 0; j < 8; j++) {
+                    p = myBitmap.getPixel(i, j);
+
+
+                    a = (p>>24) & 255; //get alpha
+                    r = (p>>16) & 255; //get red
+                    g = (p>>8) & 255;//get green
+                    b = p & 0xff;  //get blue
+
+                    cipher[k]= r&1;
+                    k++;
+
+                }
+
+            }
+
+
+            int msgcompose=0;
+            if(cipher[0]==1)
+                msgcompose=msgcompose+128;
+            if(cipher[1]==1)
+                msgcompose=msgcompose+64;
+            if(cipher[2]==1)
+                msgcompose=msgcompose+32;
+            if(cipher[3]==1)
+                msgcompose=msgcompose+16;
+            if(cipher[4]==1)
+                msgcompose=msgcompose+8;
+            if(cipher[5]==1)
+                msgcompose=msgcompose+4;
+            if(cipher[6]==1)
+                msgcompose=msgcompose+2;
+            if(cipher[7]==1)
+                msgcompose=msgcompose+1;
+            msgcompose=msgcompose-48;
+
+            if (msgcompose==1) {
+                Toast.makeText(getBaseContext(), "Scheme 1", Toast.LENGTH_LONG).show();
+                return 1;
+            }
+
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
+        }
+//*******************************************************
+        try {
+            h = myBitmap.getHeight();
+            w = myBitmap.getWidth();
+            k = 0;
+            cipher=new int[h*w];
+
+
+            for (i = 0; i < 8; i++) {
+                for (j = 0; j < 8; j++) {
+                    p = myBitmap.getPixel(i, j);
+
+
+                    a = (p>>24) & 255; //get alpha
+                    r = (p>>16) & 255; //get red
+                    g = (p>>8) & 255;//get green
+                    b = p & 0xff;  //get blue
+
+                    cipher[k]= r&1;
+                    k++;
+                    cipher[k]=g&1;
+                    k++;
+
+                }
+
+            }
+
+
+            int msgcompose=0;
+            if(cipher[0]==1)
+                msgcompose=msgcompose+128;
+            if(cipher[1]==1)
+                msgcompose=msgcompose+64;
+            if(cipher[2]==1)
+                msgcompose=msgcompose+32;
+            if(cipher[3]==1)
+                msgcompose=msgcompose+16;
+            if(cipher[4]==1)
+                msgcompose=msgcompose+8;
+            if(cipher[5]==1)
+                msgcompose=msgcompose+4;
+            if(cipher[6]==1)
+                msgcompose=msgcompose+2;
+            if(cipher[7]==1)
+                msgcompose=msgcompose+1;
+            msgcompose=msgcompose-48;
+            if (msgcompose==2)
+            {
+                Toast.makeText(getBaseContext(), "Scheme 2", Toast.LENGTH_LONG).show();
+                return 2;
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
+        }
+
+        //**********************************************************************************
+
+        try {
+            h = myBitmap.getHeight();
+            w = myBitmap.getWidth();
+            k = 0;
+            cipher=new int[h*w];
+
+
+            for (i = 0; i < 8; i++) {
+                for (j = 0; j<8 ; j++) {
+                    p = myBitmap.getPixel(i, j);
+
+
+                    a = (p>>24) & 255; //get alpha
+                    r = (p>>16) & 255; //get red
+                    g = (p>>8) & 255;//get green
+                    b = p & 0xff;  //get blue
+
+                    cipher[k]= r&1;
+                    k++;
+                    cipher[k]= g&1;
+                    k++;
+                    cipher[k]= b&1;
+                    k++;
+
+                }
+
+            }
+
+
+            int msgcompose=0;
+            if(cipher[0]==1)
+                msgcompose=msgcompose+128;
+            if(cipher[1]==1)
+                msgcompose=msgcompose+64;
+            if(cipher[2]==1)
+                msgcompose=msgcompose+32;
+            if(cipher[3]==1)
+                msgcompose=msgcompose+16;
+            if(cipher[4]==1)
+                msgcompose=msgcompose+8;
+            if(cipher[5]==1)
+                msgcompose=msgcompose+4;
+            if(cipher[6]==1)
+                msgcompose=msgcompose+2;
+            if(cipher[7]==1)
+                msgcompose=msgcompose+1;
+
+            msgcompose=msgcompose-48;
+            if (msgcompose == 3)
+            {
+                Toast.makeText(getBaseContext(), "Scheme 3", Toast.LENGTH_LONG).show();
+                return 3;
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), "Error!" + e, Toast.LENGTH_LONG).show();
+        }
+
+
+        return 9;
+    }
+}
